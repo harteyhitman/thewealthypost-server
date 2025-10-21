@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlogModule } from './posts/posts.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
+import { AuthModule } from './auth/auth.module';
+import { Admin } from './auth/entities/auth.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -26,12 +27,13 @@ TypeOrmModule.forRootAsync({
       database: configService.get<string>('DB_NAME'), // Make sure this matches .env
       autoLoadEntities: true,
       synchronize: true,
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      entities: [__dirname + '/**/*.entity{.ts,.js}', Admin],
     };
   },
   inject: [ConfigService],
 }),
     BlogModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

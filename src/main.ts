@@ -1,22 +1,65 @@
+// src/main.ts
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import * as path from 'path';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import * as path from 'path';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
+  // Create the app with Express platform
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const config = app.get(ConfigService);
-  const uploadDir = config.get('UPLOAD_DIR') || './uploads';
+  const configService = app.get(ConfigService);
+
+  // Global validation pipe
+  app.useGlobalPipes(new ValidationPipe());
+
+  // Static file serving for uploads
+  const uploadDir = configService.get('UPLOAD_DIR') || './uploads';
   app.useStaticAssets(path.join(process.cwd(), uploadDir), {
-    prefix: '/uploads/', // so images served at /uploads/filename.jpg
+    prefix: '/uploads/', // Images served at /uploads/filename.jpg
   });
 
+  // Swagger/OpenAPI configuration
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Blog API')
+    .setDescription('The blog API with admin authentication')
+    .setVersion('1.0')
+    .addTag('auth')
+    .addTag('blog-posts')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth', // This name matches @ApiBearerAuth() in controllers
+    )
+    .build();
+
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
+
+  // CORS configuration
   app.enableCors({
-    origin: true,
+    origin: true, // or specify specific origins: ['http://localhost:3000', 'https://yourdomain.com']
     credentials: true,
   });
 
-  await app.listen(config.get('PORT') || 4000);
+  // Get port from config or default
+  const port = configService.get('PORT') || 4000;
+  
+  await app.listen(port);
+  console.log(`Application is running on: http://localhost:${port}`);
+  console.log(`Swagger documentation available at: http://localhost:${port}/api`);
 }
+
 bootstrap();
