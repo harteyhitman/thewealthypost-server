@@ -14,14 +14,18 @@ constructor(private authService: AuthService) {}
  @Post('login')
   @HttpCode(200)
   @UseGuards(AuthGuard('local'))
-  @ApiOperation({ summary: 'Admin login' })
+  @ApiOperation({ summary: 'auth login' })
   @ApiBody({ type: LoginDto })
   @ApiResponse({ 
     status: 200, 
     description: 'Login successful',
     schema: {
       example: {
-        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        user: {
+          id: 1,
+          username: 'admin'
+        }
       }
     }
   })

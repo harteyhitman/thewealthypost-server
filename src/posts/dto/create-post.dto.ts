@@ -49,7 +49,7 @@ export class CreatePostDto {
   })
   @IsOptional()
   @IsString()
-  tags?: string;
+  tags?: string[];
 
   @ApiPropertyOptional({ 
     example: 'my-first-blog-post',
