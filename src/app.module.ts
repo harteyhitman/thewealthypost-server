@@ -26,7 +26,7 @@ TypeOrmModule.forRootAsync({
       password: configService.get<string>('DB_PASSWORD'),
       database: configService.get<string>('DB_NAME'), // Make sure this matches .env
       autoLoadEntities: true,
-      synchronize: true,
+      // synchronize: true,
       entities: [__dirname + '/**/*.entity{.ts,.js}', Admin],
     };
   },
